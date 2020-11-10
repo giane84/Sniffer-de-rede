@@ -1,0 +1,136 @@
+﻿<UserControl x:Class="NetworkSniffer.View.AnalyzerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NetworkSniffer.View"             
+             MinHeight="400" MinWidth="600">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+            <Button Content="Sniffer" HorizontalAlignment="Right" VerticalAlignment="Center" Height="25" Width="70" Padding="10 0" Margin="5 0"
+                    DataContext="{Binding Main, Source={StaticResource Locator}}"
+                    Command="{Binding OpenSniffer}"></Button>
+        </DockPanel>
+        <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+               Margin="20 0" Foreground="BlueViolet" FontSize="16"
+               HorizontalAlignment="Center"
+               Content="General traffic statistics"></Label>
+        <StackPanel Grid.Row="2" Grid.Column="0"
+                    HorizontalAlignment="Left" Width="250">
+            <DockPanel>
+                <Label Content="Packets captured:"></Label>
+                <Label HorizontalAlignment="Right"
+                       Content="{Binding PacketsTotal}"></Label>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Bytes captured:"></Label>
+                <Label HorizontalAlignment="Right"
+                       Content="{Binding BytesTotal}"></Label>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Total capture time:"></Label>
+                <Label HorizontalAlignment="Right"
+                       Content="{Binding CapturingTime}"></Label>
+            </DockPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="1"
+                    HorizontalAlignment="Left" Width="250">
+            <DockPanel>
+                <Label Content="Packets per second:"></Label>
+                <Label HorizontalAlignment="Right"
+                       Content="{Binding AveragePPS}"></Label>
+            </DockPanel>
+            <DockPanel>
+                <Label Content="Bytes per second:"></Label>
+                <Label HorizontalAlignment="Right"
+                       Content="{Binding AverageBPS}"></Label>
+            </DockPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Grid.Column="0"
+                    Margin="10">
+            <Label Margin="20 5" Foreground="CornflowerBlue" FontSize="14"
+                   Content="Transport protocol statistics"></Label>
+            <ListView HorizontalAlignment="Stretch" BorderThickness="0"
+                      ItemsSource="{Binding TransportProtocolStats}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Protocol type" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=ProtocolName}"></TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="No. of packets" Width="90">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=Count}"></TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="% of packets" Width="80">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=Percentage}"></TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Focusable" Value="false"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Grid.Column="1"
+                    Margin="10">
+            <Label Margin="20 5" Foreground="CornflowerBlue" FontSize="14"
+                   Content="Packet length statistics"></Label>
+            <ListView HorizontalAlignment="Stretch" BorderThickness="0"
+                      ItemsSource="{Binding PacketLengthStats}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Packet size" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=Range}"></TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="No. of packets" Width="80">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=Count}"></TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="% of packets" Width="90">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=Percentage}"></TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Focusable" Value="false"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </StackPanel>
+    </Grid>
+</UserControl>

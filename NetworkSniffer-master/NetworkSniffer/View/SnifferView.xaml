@@ -1,0 +1,374 @@
+﻿<UserControl x:Class="NetworkSniffer.View.SnifferView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NetworkSniffer.View"
+             xmlns:model="clr-namespace:NetworkSniffer.Model"
+             xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:vm="clr-namespace:NetworkSniffer.ViewModel"
+             MinHeight="400" MinWidth="600"
+             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+             DataContext="{Binding Main, Source={StaticResource Locator}}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="3*"></RowDefinition>
+            <RowDefinition Height="5"></RowDefinition>
+            <RowDefinition Height="2*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"></ColumnDefinition>
+            <ColumnDefinition Width="5"></ColumnDefinition>
+            <ColumnDefinition Width="5*" MinWidth="100"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+            <ComboBox Height="25" Width="175" Padding="10 0" Margin="5 0 0 0" VerticalContentAlignment="Center" ToolTip="Select IP address" 
+                      SelectedItem="{Binding SelectedInterface, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      ItemsSource="{Binding InterfaceList}"
+                      IsEnabled="{Binding IsInterfaceChangeAllowed}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding InterfaceNameAndAddress}"></TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="DropDownOpened" >
+                        <i:InvokeCommandAction Command="{Binding RefreshInterfaceList}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ComboBox>
+            <Button Content="Start"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10 0" Margin="5 0"
+                    Command="{Binding StartCapture}"
+                    IsEnabled="{Binding IsStartEnabled}"></Button>
+            <Button Content="Stop"  HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10 0" Margin="0 0 5 0"
+                    Command="{Binding StopCapture}"
+                    IsEnabled="{Binding IsStopEnabled}"></Button>
+            <TextBox VerticalAlignment="Center" Height="25" Width="250" Padding="3"
+                     Text="{Binding FilterBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Background="{Binding FilterValidity}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter"
+                                Command="{Binding ApplyFilter}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Content="Filter" VerticalAlignment="Center" Height="25" Padding="10 0" Margin="5 0"
+                    Command="{Binding ApplyFilter}"
+                    IsEnabled="{Binding IsFilterEnabled}"></Button>
+            <Button Content="Reset" VerticalAlignment="Center" Height="25" Padding="10 0" Margin="0 0 5 0"
+                    Command="{Binding ResetFilter}"
+                    IsEnabled="{Binding IsResetEnabled}"></Button>
+            <Button Content="Clear" VerticalAlignment="Center" Height="25" Padding="10 0"
+                    Command="{Binding ClearPacketList}"
+                    IsEnabled="{Binding IsClearEnabled}"></Button>
+            <DockPanel HorizontalAlignment="Right">
+                <Button Content="Help" VerticalAlignment="Center" Height="25" Width="70" Padding="10 0" Margin="5 0"
+                    Command="{Binding OpenHelp}"></Button>
+                <Button Content="Statistics" VerticalAlignment="Center" Height="25" Width="70" Padding="10 0" Margin="5 0"
+                    Command="{Binding OpenAnalyzer}"></Button>
+            </DockPanel>
+        </DockPanel>
+        <ListView Grid.Row="1" Grid.ColumnSpan="3" Height="Auto"
+                  ItemsSource="{Binding Path=FilteredPacketList}"
+                  SelectedItem="{Binding SelectedPacket, Mode=TwoWay}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="No." Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=PacketID}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Source IP" Width="130">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=IPHeader[0].SourceIPAddress}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Source Port" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock Text="{Binding Path=UDPPacket[0].UDPHeader[0].SourcePort}"></TextBlock>
+                                    <TextBlock Text="{Binding Path=TCPPacket[0].TCPHeader[0].SourcePort}"></TextBlock>
+                                </DockPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Destination IP" Width="130">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=IPHeader[0].DestinationIPAddress}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Destination Port" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock Text="{Binding Path=UDPPacket[0].UDPHeader[0].DestinationPort}"></TextBlock>
+                                    <TextBlock Text="{Binding Path=TCPPacket[0].TCPHeader[0].DestinationPort}"></TextBlock>
+                                </DockPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Time" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=ReceiveTime}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Type" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=IPHeader[0].TransportProtocolName}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Length" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=IPHeader[0].TotalLength}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <GridSplitter Grid.Row="2" Grid.RowSpan="1" Grid.ColumnSpan="3" ResizeDirection="Rows" Width="Auto" Height="5" HorizontalAlignment="Stretch" Margin="0" />
+        <TreeView Grid.Row="3" Grid.Column="0"
+                  Padding="5"
+                  ItemsSource ="{Binding SelectedPacketTree}">
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type model:IPPacket}" ItemsSource="{Binding Path=PacketContent}">
+                    <DockPanel>
+                        <TextBlock Text="IP Packet: "></TextBlock>
+                        <TextBlock Text="{Binding IPHeader[0].SourceIPAddress}"></TextBlock>
+                        <TextBlock Text=" --> "></TextBlock>
+                        <TextBlock Text="{Binding IPHeader[0].DestinationIPAddress}"></TextBlock>
+                        <TextBlock Text="; "></TextBlock>
+                        <TextBlock Text="{Binding IPHeader[0].TransportProtocolName}"></TextBlock>
+                        <TextBlock Text="; "></TextBlock>
+                        <TextBlock Text="{Binding TCPPacket[0].ApplicationProtocolType.PortName}"></TextBlock>
+                        <TextBlock Text="{Binding UDPPacket[0].ApplicationProtocolType.PortName}"></TextBlock>
+                    </DockPanel>                    
+                </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type model:TCPPacket}" ItemsSource="{Binding Path=PacketContent}">
+                    <TextBlock Text="TCP Packet"></TextBlock>
+                </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type model:UDPPacket}" ItemsSource="{Binding Path=PacketContent}">
+                    <TextBlock Text="UDP Packet"></TextBlock>
+                </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type model:ICMPPacket}" ItemsSource="{Binding Path=PacketContent}">
+                    <TextBlock Text="ICMP Packet"></TextBlock>
+                </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type model:IGMPPacket}" ItemsSource="{Binding Path=PacketContent}">
+                    <TextBlock Text="IGMP Packet"></TextBlock>
+                </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type model:DNSPacket}" ItemsSource="{Binding Path=PacketContent}">
+                    <TextBlock Text="DNS Packet"></TextBlock>
+                </HierarchicalDataTemplate>
+                <DataTemplate DataType="{x:Type model:IPHeader}">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Version: "></TextBlock>
+                            <TextBlock Text="{Binding Version}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   IHL: "></TextBlock>
+                            <TextBlock Text="{Binding InternetHeaderLength}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   TOS: "></TextBlock>
+                            <TextBlock Text="{Binding TypeOfService}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Total length: "></TextBlock>
+                            <TextBlock Text="{Binding TotalLength}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Flags: "></TextBlock>
+                            <TextBlock Text="{Binding Flags}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Fragment Offset: "></TextBlock>
+                            <TextBlock Text="{Binding FragmentOffset}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   TTL: "></TextBlock>
+                            <TextBlock Text="{Binding TimeToLive}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Transport protocol: "></TextBlock>
+                            <TextBlock Text="{Binding TransportProtocolName}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Header checksum: "></TextBlock>
+                            <TextBlock Text="{Binding HeaderChecksum}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Source: "></TextBlock>
+                            <TextBlock Text="{Binding SourceIPAddress}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Destination: "></TextBlock>
+                            <TextBlock Text="{Binding DestinationIPAddress}"></TextBlock>
+                        </DockPanel>
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type model:TCPHeader}">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Source Port: "></TextBlock>
+                            <TextBlock Text="{Binding SourcePort}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Destination Port: "></TextBlock>
+                            <TextBlock Text="{Binding DestinationPort}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Sequence Number: "></TextBlock>
+                            <TextBlock Text="{Binding SequenceNumber}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Acknowledgment Number: "></TextBlock>
+                            <TextBlock Text="{Binding AcknowledgmentNumber }"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Data Offset: "></TextBlock>
+                            <TextBlock Text="{Binding DataOffset}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Flags: "></TextBlock>
+                            <TextBlock Text="{Binding Flags}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Window Size: "></TextBlock>
+                            <TextBlock Text="{Binding WindowSize}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Checksum: "></TextBlock>
+                            <TextBlock Text="{Binding Checksum}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   UrgentPointer: "></TextBlock>
+                            <TextBlock Text="{Binding UrgentPointer}"></TextBlock>
+                        </DockPanel>
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type model:UDPHeader}">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Source Port: "></TextBlock>
+                            <TextBlock Text="{Binding SourcePort}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Destination Port: "></TextBlock>
+                            <TextBlock Text="{Binding DestinationPort}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Length: "></TextBlock>
+                            <TextBlock Text="{Binding Length}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Checksum: "></TextBlock>
+                            <TextBlock Text="{Binding Checksum}"></TextBlock>
+                        </DockPanel>
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type model:ICMPHeader}">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Type: "></TextBlock>
+                            <TextBlock Text="{Binding ICMPType.ICMPNumber}"></TextBlock>
+                            <TextBlock Text=" ("></TextBlock>
+                            <TextBlock Text="{Binding ICMPType.ICMPTypeName}"></TextBlock>
+                            <TextBlock Text=")"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Code: "></TextBlock>
+                            <TextBlock Text="{Binding Code}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Checksum: "></TextBlock>
+                            <TextBlock Text="{Binding Checksum}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Rest of Header: "></TextBlock>
+                            <TextBlock Text="{Binding RestOfHeader}"></TextBlock>
+                        </DockPanel>
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type model:IGMPHeader}">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Type: "></TextBlock>
+                            <TextBlock Text="{Binding Type}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   MaxResponseTime: "></TextBlock>
+                            <TextBlock Text="{Binding MaxResponseTime}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Checksum: "></TextBlock>
+                            <TextBlock Text="{Binding Checksum}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   GroupAddress: "></TextBlock>
+                            <TextBlock Text="{Binding GroupAddress}"></TextBlock>
+                        </DockPanel>
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type model:DNSHeader}">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Identification: "></TextBlock>
+                            <TextBlock Text="{Binding Identification}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Flags: "></TextBlock>
+                            <TextBlock Text="{Binding Flags}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Questions: "></TextBlock>
+                            <TextBlock Text="{Binding Questions}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   Answer: "></TextBlock>
+                            <TextBlock Text="{Binding Answer}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   AuthorityRR: "></TextBlock>
+                            <TextBlock Text="{Binding AuthorityRR}"></TextBlock>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="   AdditionalRR: "></TextBlock>
+                            <TextBlock Text="{Binding AdditionalRR}"></TextBlock>
+                        </DockPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+        <GridSplitter Grid.Row="3" Grid.Column="1" ResizeDirection="Columns" Width="5" Height="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0" />
+        <DockPanel Grid.Row="3" Grid.Column="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Hidden">
+                    <TextBox IsReadOnly="True" TextWrapping="Wrap" TextAlignment="Justify" Padding="5"
+                             Text="{Binding HexPacketData, Mode=OneWay}"></TextBox>
+                </ScrollViewer>
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Hidden">
+                    <TextBox IsReadOnly="True" TextWrapping="Wrap" TextAlignment="Justify" Padding="5"
+                             Text="{Binding CharPacketData, Mode=OneWay}"></TextBox>
+                </ScrollViewer>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</UserControl>
