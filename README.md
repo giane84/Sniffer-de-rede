@@ -5,5 +5,5 @@ Projeto de sniffer de rede, para captar endereços do tipo ipv6. O projeto visa 
 
 
 
-Créditos aos úsuarios : gcupko00, bolkonksy aos quais efetuaram o trabalho anteriormente.
+Créditos aos usuários : gcupko00, bolkonksy aos quais efetuaram o trabalho anteriormente.
 Link para o projeto utilizado como base: https://github.com/gcupko00/NetworkSniffer
