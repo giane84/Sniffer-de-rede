@@ -84,7 +84,7 @@
                     <GridViewColumn Header="Source IP" Width="130">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Path=IPHeader[0].SourceIPAddress}"></TextBlock>
+                                <TextBlock Text="{Binding Path=IPv6Header[0].SourceIPAddress}"></TextBlock>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -101,7 +101,7 @@
                     <GridViewColumn Header="Destination IP" Width="130">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Path=IPHeader[0].DestinationIPAddress}"></TextBlock>
+                                <TextBlock Text="{Binding Path=IPv6Header[0].DestinationIPAddress}"></TextBlock>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -125,14 +125,14 @@
                     <GridViewColumn Header="Type" Width="100">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Path=IPHeader[0].TransportProtocolName}"></TextBlock>
+                                <TextBlock Text="{Binding Path=IPv6Header[0].TransportProtocolName}"></TextBlock>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn Header="Length" Width="100">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Path=IPHeader[0].TotalLength}"></TextBlock>
+                                <TextBlock Text="{Binding Path=IPv6Header[0].TotalLength}"></TextBlock>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -144,14 +144,14 @@
                   Padding="5"
                   ItemsSource ="{Binding SelectedPacketTree}">
             <TreeView.Resources>
-                <HierarchicalDataTemplate DataType="{x:Type model:IPPacket}" ItemsSource="{Binding Path=PacketContent}">
+                <HierarchicalDataTemplate DataType="{x:Type model:IPv6Packet}" ItemsSource="{Binding Path=PacketContent}">
                     <DockPanel>
                         <TextBlock Text="IP Packet: "></TextBlock>
-                        <TextBlock Text="{Binding IPHeader[0].SourceIPAddress}"></TextBlock>
+                        <TextBlock Text="{Binding IPv6Header[0].SourceIPAddress}"></TextBlock>
                         <TextBlock Text=" --> "></TextBlock>
-                        <TextBlock Text="{Binding IPHeader[0].DestinationIPAddress}"></TextBlock>
+                        <TextBlock Text="{Binding IPv6Header[0].DestinationIPAddress}"></TextBlock>
                         <TextBlock Text="; "></TextBlock>
-                        <TextBlock Text="{Binding IPHeader[0].TransportProtocolName}"></TextBlock>
+                        <TextBlock Text="{Binding IPv6Header[0].TransportProtocolName}"></TextBlock>
                         <TextBlock Text="; "></TextBlock>
                         <TextBlock Text="{Binding TCPPacket[0].ApplicationProtocolType.PortName}"></TextBlock>
                         <TextBlock Text="{Binding UDPPacket[0].ApplicationProtocolType.PortName}"></TextBlock>
@@ -172,7 +172,7 @@
                 <HierarchicalDataTemplate DataType="{x:Type model:DNSPacket}" ItemsSource="{Binding Path=PacketContent}">
                     <TextBlock Text="DNS Packet"></TextBlock>
                 </HierarchicalDataTemplate>
-                <DataTemplate DataType="{x:Type model:IPHeader}">
+                <DataTemplate DataType="{x:Type model:IPv6Header}">
                     <StackPanel>
                         <DockPanel>
                             <TextBlock Text="   Version: "></TextBlock>

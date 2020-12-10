@@ -97,6 +97,8 @@
     <Compile Include="Model\IGMPHeader.cs" />
     <Compile Include="Model\IGMPPacket.cs" />
     <Compile Include="Model\IPNetworkInterface.cs" />
+    <Compile Include="Model\IPv6Header.cs" />
+    <Compile Include="Model\IPv6Packet.cs" />
     <Compile Include="Model\PacketLengthCategory.cs" />
     <Compile Include="Model\TCPHeader.cs" />
     <Compile Include="Model\UDPHeader.cs" />

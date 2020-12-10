@@ -76,9 +76,9 @@ namespace NetworkSniffer.ViewModel
             lowerLengthList = new List<string>();
 
             InterfaceList = new ObservableCollection<IPNetworkInterface>();
-            PacketList = new ObservableCollection<IPPacket>();
-            FilteredPacketList = new ObservableCollection<IPPacket>();
-            SelectedPacketTree = new ObservableCollection<IPPacket>();
+            PacketList = new ObservableCollection<IPv6Packet>();
+            FilteredPacketList = new ObservableCollection<IPv6Packet>();
+            SelectedPacketTree = new ObservableCollection<IPv6Packet>();
             GetInterfaces();
         }
         #endregion
@@ -101,11 +101,11 @@ namespace NetworkSniffer.ViewModel
             }
         }
                 
-        private ObservableCollection<IPPacket> packetList;
+        private ObservableCollection<IPv6Packet> packetList;
         /// <summary>
         /// Stores all captured packets
         /// </summary>
-        public ObservableCollection<IPPacket> PacketList
+        public ObservableCollection<IPv6Packet> PacketList
         {
             get
             {
@@ -119,11 +119,11 @@ namespace NetworkSniffer.ViewModel
             }
         }
         
-        private ObservableCollection<IPPacket> filteredPacketList;
+        private ObservableCollection<IPv6Packet> filteredPacketList;
         /// <summary>
         /// Stores packets from PacketList filtered according to filter conditions
         /// </summary>
-        public ObservableCollection<IPPacket> FilteredPacketList
+        public ObservableCollection<IPv6Packet> FilteredPacketList
         {
             get
             {
@@ -137,11 +137,11 @@ namespace NetworkSniffer.ViewModel
             }
         }
         
-        private IPPacket selectedPacket;
+        private IPv6Packet selectedPacket;
         /// <summary>
         /// Packet currently selected in FilteredPacketList
         /// </summary>
-        public IPPacket SelectedPacket
+        public IPv6Packet SelectedPacket
         {
             get
             {
@@ -165,7 +165,7 @@ namespace NetworkSniffer.ViewModel
         /// <summary>
         /// Used to bind TreeViewItems to SelectedPacket properties
         /// </summary>
-        public ObservableCollection<IPPacket> SelectedPacketTree { get; private set; }
+        public ObservableCollection<IPv6Packet> SelectedPacketTree { get; private set; }
 
         /// <summary>
         /// List of available network interfaces addresses
@@ -380,7 +380,8 @@ namespace NetworkSniffer.ViewModel
                 {
                     foreach (UnicastIPAddressInformation ip in networkInterface.GetIPProperties().UnicastAddresses)
                     {
-                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                        //if (ip.Address.AddressFamily == AddressFamily.InterNetwork || ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                        if (ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
                         {
                             InterfaceList.Add(new IPNetworkInterface
                             {
@@ -408,7 +409,7 @@ namespace NetworkSniffer.ViewModel
         /// Adds newly received packet to packet lists
         /// </summary>
         /// <param name="newPacket">Packet to be added to packet lists</param>
-        private void ReceiveNewPacket(IPPacket newPacket)
+        private void ReceiveNewPacket(IPv6Packet newPacket)
         {
             newPacket.PacketID = (uint)PacketList.Count + 1;
 
@@ -430,7 +431,7 @@ namespace NetworkSniffer.ViewModel
         /// Decides whether newPacket should be added to FilteredPacketList or not
         /// </summary>
         /// <param name="newPacket">Packet to be processed and added to FilteredPacketList if it satisfies filter conditions</param>
-        private void AddToFilteredList(IPPacket newPacket)
+        private void AddToFilteredList(IPv6Packet newPacket)
         {
             // If the filterString is empty, just add newPacket to the FilterPacketList
             if (string.IsNullOrEmpty(filter))
@@ -441,9 +442,14 @@ namespace NetworkSniffer.ViewModel
 
             // If none of the substrings uses the proper syntax, ignore it and add packet
             // as if there was no filter at all.
-            if (protocolList.Count == 0 && protocolListToExclude.Count == 0 && srcIPList.Count == 0 &&
-                destIPList.Count == 0 && srcPortList.Count == 0 && destPortList.Count == 0 &&
-                higherLengthList.Count == 0 && lowerLengthList.Count == 0)
+            if (protocolList.Count == 0 && 
+                protocolListToExclude.Count == 0 && 
+                srcIPList.Count == 0 &&
+                destIPList.Count == 0 && 
+                srcPortList.Count == 0 && 
+                destPortList.Count == 0 &&
+                higherLengthList.Count == 0 && 
+                lowerLengthList.Count == 0)
             {
                 FilteredPacketList.Add(newPacket);
                 return;
@@ -463,6 +469,7 @@ namespace NetworkSniffer.ViewModel
             bool HigherLengthRule = true;
 
             // Checking empty protocolList would change the default value of IncludeProtocolRule to false
+            /* COMENTADO POIS NÃO TEM CHECAGEM DE TCP E TALS
             if (protocolList.Count != 0)
             {
                 IncludeProtocolRule = ApplyProtocolRule(newPacket, protocolList);
@@ -472,11 +479,12 @@ namespace NetworkSniffer.ViewModel
             {
                 ExcludeProtocolRule = ApplyProtocolRule(newPacket, protocolListToExclude);
             }
+            */
 
             foreach (string ip in srcIPList)
             {
                 SrcIPRule = false;
-                if (ip == newPacket.IPHeader[0].SourceIPAddress.ToString())
+                if (ip == newPacket.IPv6Header[0].SourceIPAddress.ToString())
                 {
                     SrcIPRule = true;
                     break;
@@ -486,13 +494,13 @@ namespace NetworkSniffer.ViewModel
             foreach (string ip in destIPList)
             {
                 DstIPRule = false;
-                if (ip == newPacket.IPHeader[0].DestinationIPAddress.ToString())
+                if (ip == newPacket.IPv6Header[0].DestinationIPAddress.ToString())
                 {
                     DstIPRule = true;
                     break;
                 }
             }
-
+            /*
             foreach (string port in srcPortList)
             {
                 SrcPortRule = false;
@@ -526,8 +534,9 @@ namespace NetworkSniffer.ViewModel
                     break;
                 }
             }
-
-            ushort packetLength = newPacket.IPHeader[0].TotalLength;
+            */
+            //ushort packetLength = newPacket.IPv6Header[0].TotalLength;
+            ushort packetLength = newPacket.IPv6Header[0].PayloadLength;
             foreach (string LowerLength in lowerLengthList)
             {
                 LowerLengthRule = false;
@@ -566,7 +575,9 @@ namespace NetworkSniffer.ViewModel
         /// </summary>
         /// <param name="newPacket"></param>
         /// <param name="ProtocolList"></param>
-        private bool ApplyProtocolRule(IPPacket newPacket, List<string> ProtocolList)
+        
+        /*
+        private bool ApplyProtocolRule(IPv6Packet newPacket, List<string> ProtocolList)
         {
             foreach (string protocol in ProtocolList)
             {
@@ -579,12 +590,12 @@ namespace NetworkSniffer.ViewModel
                     return true;
                 }
                 else if (protocol.Equals("IGMP") &&
-                    newPacket.IPHeader[0].TransportProtocolName == "IGMP")
+                    newPacket.IPv6Header[0].TransportProtocolName == "IGMP")
                 {
                     return true;
                 }
                 else if (protocol.Equals("ICMP") &&
-                    newPacket.IPHeader[0].TransportProtocolName == "ICMP")
+                    newPacket.IPv6Header[0].TransportProtocolName == "ICMP")
                 {
                     return true;
                 }
@@ -631,6 +642,7 @@ namespace NetworkSniffer.ViewModel
 
             return false;
         }
+        */
 
         /// <summary>
         /// Returns the same List given in parameter list, but with new string
@@ -640,14 +652,20 @@ namespace NetworkSniffer.ViewModel
         /// <param name="isValid">IP to be evaluated</param> 
         private List<string> ValidIPAddress(List<string> IPList, string isValid)
         {
-            const string PatternIP = @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$";
-            const string SrcPattern = @"^SRC=" + PatternIP;
-            const string DstPattern = @"^DEST=" + PatternIP;
+            const string PatternIPv6 = @"(?:^|(?<=\s))(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(?=\s|$)";
+            //const string PatternIP = @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$";
+            //const string SrcPattern = @"^SRC=" + PatternIP;
+            //const string DstPattern = @"^DEST=" + PatternIP;
+            const string SrcPatternIPv6 = @"^SRC=" + PatternIPv6;
+            const string DstPatternIPv6 = @"^DEST=" + PatternIPv6;
 
-            if (Regex.Match(isValid, SrcPattern).Success ||
-                Regex.Match(isValid, DstPattern).Success)
+            if (//Regex.Match(isValid, SrcPattern).Success ||
+                //Regex.Match(isValid, DstPattern).Success || 
+                Regex.Match(isValid, SrcPatternIPv6).Success ||
+                Regex.Match(isValid, DstPatternIPv6).Success)
             {
-                string ipString = Regex.Match(isValid, PatternIP).Value;
+                //string ipString = Regex.Match(isValid, PatternIP).Value;
+                string ipString = Regex.Match(isValid, PatternIPv6).Value;
                 IPAddress ipAddress;
                 if (IPAddress.TryParse(ipString, out ipAddress))
                 {
@@ -746,7 +764,7 @@ namespace NetworkSniffer.ViewModel
 
             lock (PacketList)
             {
-                foreach (IPPacket packet in PacketList)
+                foreach (IPv6Packet packet in PacketList)
                 {
                     lock (FilteredPacketList)
                     {
@@ -778,15 +796,16 @@ namespace NetworkSniffer.ViewModel
         /// </summary>
         private void GetPacketHexAndCharData()
         {
-            int length = SelectedPacket.IPHeader[0].TotalLength;
+            //int length = SelectedPacket.IPv6Header[0].TotalLength;
+            int length = SelectedPacket.IPv6Header[0].PayloadLength;
 
             StringBuilder charStringBuilder = new StringBuilder();
             StringBuilder hexStringBuilder = new StringBuilder();
 
             // Copy header and message from selected IP packet to packetData
             byte[] packetData = new byte[length];
-            Array.Copy(SelectedPacket.ByteIPHeader, packetData, SelectedPacket.ByteIPHeader.Length);
-            Array.Copy(SelectedPacket.ByteIPMessage, 0, packetData, SelectedPacket.ByteIPHeader.Length, SelectedPacket.ByteIPMessage.Length);
+            Array.Copy(SelectedPacket.ByteIPv6Header, packetData, SelectedPacket.ByteIPv6Header.Length);
+            Array.Copy(SelectedPacket.ByteIPv6Message, 0, packetData, SelectedPacket.ByteIPv6Header.Length, SelectedPacket.ByteIPv6Message.Length);
 
             for (int i = 0; i < length; i++)
             {

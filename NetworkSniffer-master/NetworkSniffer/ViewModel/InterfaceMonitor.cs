@@ -14,6 +14,8 @@ namespace NetworkSniffer.Model
         private byte[] byteBufferData;
         private Socket socket;
         private IPAddress ipAddress;
+
+        public ProtocolType Undefined { get; }
         #endregion
 
         #region Constructors
@@ -24,7 +26,9 @@ namespace NetworkSniffer.Model
         public InterfaceMonitor(string ip)
         {
             byteBufferData = new byte[MTU];
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
+            //socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.IP);
+            // socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.IPv6);
+            socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.Unspecified);
             ipAddress = IPAddress.Parse(ip);
         }
         #endregion
@@ -39,7 +43,8 @@ namespace NetworkSniffer.Model
             socket.Bind(new IPEndPoint(ipAddress, 0));
 
             /* Socket options apply only to IP packets */
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, true);
+            //socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, true);
+            socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.HeaderIncluded, false);
 
             byte[] byteTrue = new byte[4] { 1, 0, 0, 0 };
             byte[] byteOut = new byte[4];
@@ -64,7 +69,7 @@ namespace NetworkSniffer.Model
                 byte[] receivedData = new byte[bytesReceived];
                 Array.Copy(byteBufferData, 0, receivedData, 0, bytesReceived);
 
-                IPPacket newPacket = new IPPacket(receivedData, bytesReceived);
+                IPv6Packet newPacket = new IPv6Packet(receivedData, bytesReceived);
                 if (newPacketEventHandler != null)
                 {
                     newPacketEventHandler(newPacket);
@@ -97,7 +102,7 @@ namespace NetworkSniffer.Model
         #region Event handlers
         public event NewPacketEventHandler newPacketEventHandler;
 
-        public delegate void NewPacketEventHandler(IPPacket newPacket);
+        public delegate void NewPacketEventHandler(IPv6Packet newPacket);
         #endregion
     }
 }

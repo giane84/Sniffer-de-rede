@@ -51,16 +51,17 @@ namespace NetworkSniffer.ViewModel
         /// Updates traffic statistics according to the received packet characteristics
         /// </summary>
         /// <param name="newPacket">Received packet depending on which statistics are updated</param>
-        public static void UpdateStats(IPPacket newPacket)
+        public static void UpdateStats(IPv6Packet newPacket)
         {
-            int newPacketLength = newPacket.IPHeader[0].TotalLength;
-            string newPacketProtocol = newPacket.IPHeader[0].TransportProtocolName;
+            //int newPacketLength = newPacket.IPv6Header[0].TotalLength;
+            int newPacketLength = newPacket.IPv6Header[0].PayloadLength;
+            //string newPacketProtocol = newPacket.IPv6Header[0].TransportProtocolName; // não tem essa, teria que checar o Next Header
 
             PacketsTotal++;
-            BytesTotal += newPacket.IPHeader[0].TotalLength;
+            BytesTotal += newPacket.IPv6Header[0].PayloadLength;
 
             SortPacketByLength(newPacketLength);
-            SortPacketByProtocol(newPacketProtocol);
+            //SortPacketByProtocol(newPacketProtocol);
         }
 
         /// <summary>
